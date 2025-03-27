@@ -38,7 +38,7 @@ function App() {
         ? formData // Include name in signup
         : { email: formData.email, password: formData.password }; // Exclude name in login
 
-      const response = await axios.post(url, payload);
+      const response = await axios.post(url, payload,{withCredentials: true});
 
       alert(response.data?.message || "Operation successful!"); // ✅ Fixed: Added default message
     } catch (error) {
