@@ -17,6 +17,23 @@ mongoose.connect(process.env.MONGO_URI, {
 }).then(() => console.log("MongoDB Connected"))
   .catch(err => console.log(err));
 
+// Middleware to verify token
+const verifyToken = (req, res, next) => {
+  const token = req.header("Authorization");
+
+  if (!token) {
+    return res.status(401).json({ message: "Access Denied. No token provided." });
+  }
+
+  try {
+    const verified = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = verified; // Add user data to request
+    next();
+  } catch (error) {
+    res.status(400).json({ message: "Invalid Token" });
+  }
+};
+
 // Signup API
 app.post('/signup', async (req, res) => {
   try {
@@ -63,6 +80,16 @@ app.post('/login', async (req, res) => {
 
     res.status(200).json({ message: "Login successful", token });
 
+  } catch (error) {
+    res.status(500).json({ message: "Server Error" });
+  }
+});
+
+// ✅ New Route: Get All Users (Protected Route)
+app.get('/users', verifyToken, async (req, res) => {
+  try {
+    const users = await User.find({}, { password: 0 }); // Exclude passwords from response
+    res.status(200).json(users);
   } catch (error) {
     res.status(500).json({ message: "Server Error" });
   }

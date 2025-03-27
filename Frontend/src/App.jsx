@@ -23,7 +23,7 @@ function App() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validation
+    // Password validation for signup
     if (signup && formData.password !== formData.confirmPassword) {
       alert("Passwords do not match!");
       return;
@@ -33,16 +33,17 @@ function App() {
       const url = signup
         ? "https://login-from-full-stack.onrender.com/signup"
         : "https://login-from-full-stack.onrender.com/login";
-      
+
       const payload = signup
         ? formData // Include name in signup
         : { email: formData.email, password: formData.password }; // Exclude name in login
-      
+
       const response = await axios.post(url, payload);
-      
-      alert(response.data.message); // Success message
+
+      alert(response.data?.message || "Operation successful!"); // ✅ Fixed: Added default message  
     } catch (error) {
-      alert("Error: " + (error.response ? error.response.data.message : error.message));
+      console.error("Error:", error);
+      alert("Error: " + (error.response?.data?.message || "Something went wrong!")); // ✅ Fixed: Added optional chaining + default message  
     }
   };
 
