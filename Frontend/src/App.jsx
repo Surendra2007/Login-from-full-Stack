@@ -1,45 +1,109 @@
 import React, { useState } from "react";
+import axios from "axios";
 import "./App.css";
 
 function App() {
   const [signup, setSignup] = useState(false);
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+  });
 
   function toggleSignup() {
-    setSignup(!signup); 
+    setSignup(!signup);
+    setFormData({ name: "", email: "", password: "", confirmPassword: "" }); // Reset form on toggle
   }
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    // Validation
+    if (signup && formData.password !== formData.confirmPassword) {
+      alert("Passwords do not match!");
+      return;
+    }
+
+    try {
+      const url = signup
+        ? "https://login-from-full-stack.onrender.com/signup"
+        : "https://login-from-full-stack.onrender.com/login";
+      
+      const payload = signup
+        ? formData // Include name in signup
+        : { email: formData.email, password: formData.password }; // Exclude name in login
+      
+      const response = await axios.post(url, payload);
+      
+      alert(response.data.message); // Success message
+    } catch (error) {
+      alert("Error: " + (error.response ? error.response.data.message : error.message));
+    }
+  };
 
   return (
     <div className="main-box">
       <h1>{signup ? "Sign Up" : "Login"}</h1>
-      <form>
-        {/* add name  */}
-        <label htmlFor="name">Name</label>
-        <input type="name" id="name" name="name" required />
-        <label htmlFor="email">Email</label>
-        <input type="email" id="email" name="email" required />
-        
-        <label htmlFor="password">Password</label>
-        <input type="password" id="password" name="password" required />
-        
+      <form onSubmit={handleSubmit}>
         {signup && (
           <>
-            <label htmlFor="confirm-password">Confirm Password</label>
+            <label htmlFor="name">Name</label>
             <input
-              type="password"
-              id="confirm-password"
-              name="confirm-password"
+              type="text"
+              id="name"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
               required
             />
           </>
         )}
+
+        <label htmlFor="email">Email</label>
+        <input
+          type="email"
+          id="email"
+          name="email"
+          value={formData.email}
+          onChange={handleChange}
+          required
+        />
+
+        <label htmlFor="password">Password</label>
+        <input
+          type="password"
+          id="password"
+          name="password"
+          value={formData.password}
+          onChange={handleChange}
+          required
+        />
+
+        {signup && (
+          <>
+            <label htmlFor="confirmPassword">Confirm Password</label>
+            <input
+              type="password"
+              id="confirmPassword"
+              name="confirmPassword"
+              value={formData.confirmPassword}
+              onChange={handleChange}
+              required
+            />
+          </>
+        )}
+
         <input type="submit" value={signup ? "Sign Up" : "Login"} />
       </form>
+
       <p>
         {signup ? "Already have an account?" : "Don't have an account?"}{" "}
-        <span
-          onClick={toggleSignup}
-          
-        >
+        <span onClick={toggleSignup} style={{ cursor: "pointer", color: "blue" }}>
           {signup ? "Log in" : "Sign up"}
         </span>
       </p>
