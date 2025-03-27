@@ -1,40 +1,23 @@
 require('dotenv').config();
 const express = require('express');
-const mongoose = require('mongoose');
 const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const User = require('./models/userModel');
+const connectDB = require('./Config/db'); // Import DB connection
+const User = require('./models/userModel'); // Import User Model
 
 const app = express();
+connectDB(); // Connect to MongoDB
+
 app.use(cors());
 app.use(express.json());
 
-// Database connection
-mongoose.connect(process.env.MONGO_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-}).then(() => console.log("MongoDB Connected"))
-  .catch(err => console.log(err));
+// ✅ Route: Home
+app.get('/', (req, res) => {
+  res.send('Welcome to the API');
+});
 
-// Middleware to verify token
-const verifyToken = (req, res, next) => {
-  const token = req.header("Authorization");
-
-  if (!token) {
-    return res.status(401).json({ message: "Access Denied. No token provided." });
-  }
-
-  try {
-    const verified = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = verified; // Add user data to request
-    next();
-  } catch (error) {
-    res.status(400).json({ message: "Invalid Token" });
-  }
-};
-
-// Signup API
+// ✅ Route: Signup (User Registration)
 app.post('/signup', async (req, res) => {
   try {
     const { name, email, password, confirmPassword } = req.body;
@@ -43,17 +26,15 @@ app.post('/signup', async (req, res) => {
       return res.status(400).json({ message: "Passwords do not match" });
     }
 
-    const userExists = await User.findOne({ email });
-    if (userExists) {
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
       return res.status(400).json({ message: "User already exists" });
     }
 
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
-
+    const hashedPassword = await bcrypt.hash(password, 10);
     const newUser = new User({ name, email, password: hashedPassword });
-    await newUser.save();
 
+    await newUser.save();
     res.status(201).json({ message: "User registered successfully" });
 
   } catch (error) {
@@ -61,20 +42,16 @@ app.post('/signup', async (req, res) => {
   }
 });
 
-// Login API
+// ✅ Route: Login
 app.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
     const user = await User.findOne({ email });
 
-    if (!user) {
-      return res.status(400).json({ message: "User not found" });
-    }
+    if (!user) return res.status(400).json({ message: "User not found" });
 
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(400).json({ message: "Invalid credentials" });
-    }
+    if (!isMatch) return res.status(400).json({ message: "Invalid credentials" });
 
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "1h" });
 
@@ -85,10 +62,10 @@ app.post('/login', async (req, res) => {
   }
 });
 
-// ✅ New Route: Get All Users (Protected Route)
-app.get('/users', verifyToken, async (req, res) => {
+// ✅ Route: Get All Users
+app.get('/users', async (req, res) => {
   try {
-    const users = await User.find({}, { password: 0 }); // Exclude passwords from response
+    const users = await User.find({}, { password: 0 }); // Exclude password from response
     res.status(200).json(users);
   } catch (error) {
     res.status(500).json({ message: "Server Error" });
