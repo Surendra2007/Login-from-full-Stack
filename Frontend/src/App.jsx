@@ -40,10 +40,12 @@ function App() {
 
       const response = await axios.post(url, payload);
 
-      alert(response.data?.message || "Operation successful!"); // ✅ Fixed: Added default message  
+      alert(response.data?.message || "Operation successful!"); // ✅ Fixed: Added default message
     } catch (error) {
       console.error("Error:", error);
-      alert("Error: " + (error.response?.data?.message || "Something went wrong!")); // ✅ Fixed: Added optional chaining + default message  
+      alert(
+        "Error: " + (error.response?.data?.message || "Something went wrong!")
+      ); // ✅ Fixed: Added optional chaining + default message
     }
   };
 
@@ -104,7 +106,10 @@ function App() {
 
       <p>
         {signup ? "Already have an account?" : "Don't have an account?"}{" "}
-        <span onClick={toggleSignup} style={{ cursor: "pointer", color: "blue" }}>
+        <span
+          onClick={toggleSignup}
+          style={{ cursor: "pointer", color: "blue" }}
+        >
           {signup ? "Log in" : "Sign up"}
         </span>
       </p>

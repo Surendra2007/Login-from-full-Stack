@@ -3,22 +3,24 @@ const express = require('express');
 const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const connectDB = require('./Config/db'); // Import DB connection
-const User = require('./models/userModel'); // Import User Model
+const connectDB = require('./Config/db'); 
+const User = require('./models/userModel');
 
 const app = express();
-connectDB(); // Connect to MongoDB
+connectDB();
 
 app.use(cors());
 app.use(express.json());
 
-// ✅ Route: Home
+
 app.get('/', (req, res) => {
   res.send('Welcome to the API');
 });
 
-// ✅ Route: Signup (User Registration)
+
 app.post('/signup', async (req, res) => {
+    console.log(req.body);
+    
   try {
     const { name, email, password, confirmPassword } = req.body;
 
@@ -42,7 +44,7 @@ app.post('/signup', async (req, res) => {
   }
 });
 
-// ✅ Route: Login
+
 app.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -62,10 +64,9 @@ app.post('/login', async (req, res) => {
   }
 });
 
-// ✅ Route: Get All Users
 app.get('/users', async (req, res) => {
   try {
-    const users = await User.find({}, { password: 0 }); // Exclude password from response
+    const users = await User.find(); 
     res.status(200).json(users);
   } catch (error) {
     res.status(500).json({ message: "Server Error" });
