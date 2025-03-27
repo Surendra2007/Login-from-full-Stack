@@ -85,6 +85,7 @@ function App() {
           value={formData.password}
           onChange={handleChange}
           required
+          autoComplete="true"
         />
 
         {signup && (
