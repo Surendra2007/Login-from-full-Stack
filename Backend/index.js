@@ -1,16 +1,23 @@
-require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const connectDB = require('./Config/db'); 
 const User = require('./models/userModel');
+require('dotenv').config();
 
 const app = express();
 connectDB();
 
-app.use(cors());
-app.use(cors({ origin: "http://localhost:5173", credentials: true }));
+const corsOptions = {
+  origin: 'http://localhost:5173', // Allow requests from frontend
+  methods: 'GET,POST,PUT,DELETE',
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true, // Allow cookies & authentication headers
+};
+
+app.use(cors(corsOptions));
+
 app.use(express.json());
 
 
